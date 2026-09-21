@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Approval Queue{% endblock %}
+{% block content %}
+<h4 class="mb-3">Approval Queue</h4>
+
+<ul class="nav nav-tabs mb-3" id="approvalTabs" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#leaveTab" type="button">
+      Leave Requests <span class="badge bg-secondary">{{ leave_queue|length }}</span>
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#dutyTab" type="button">
+      Official Duties <span class="badge bg-secondary">{{ duty_queue|length }}</span>
+    </button>
+  </li>
+</ul>
+
+<div class="tab-content">
+  <div class="tab-pane fade show active" id="leaveTab">
+    <div class="card card-efdp">
+      <div class="card-body">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr><th>Key</th><th>Applicant</th><th>Type</th><th>Dates</th><th>Days</th><th>Substitute</th><th>Reason</th><th>Stage</th><th style="width:320px">Decision</th></tr>
+          </thead>
+          <tbody>
+          {% for r in leave_queue %}
+            <tr>
+              <td>{{ r.request_key }}</td>
+              <td>{{ employee_lookup.get(r.applicant_id, "—") }}</td>
+              <td>{{ leave_type_lookup.get(r.leave_type_id, "—") }}</td>
+              <td>{{ r.start_date }} → {{ r.end_date }}</td>
+              <td>{{ r.working_days }}</td>
+              <td>{{ employee_lookup.get(r.substitute_id, "—") }}</td>
+              <td class="small">{{ r.reason }}</td>
+              <td>{{ r.current_stage }}</td>
+              <td>
+                <form method="post" action="/approvals/leave/{{ r.id }}/decide" class="d-flex gap-1">
+                  <input type="text" name="note" class="form-control form-control-sm" placeholder="Note (required to reject, min {{ rejection_note_min_length }} chars)">
+                  <button class="btn btn-sm btn-success" name="decision" value="Approved" type="submit">Approve</button>
+                  <button class="btn btn-sm btn-outline-danger" name="decision" value="Rejected" type="submit"
+                          onclick="return confirm('Reject this request?');">Reject</button>
+                </form>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="9" class="text-center text-muted py-4">No leave requests are awaiting your decision.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-pane fade" id="dutyTab">
+    <div class="card card-efdp">
+      <div class="card-body">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr><th>Key</th><th>Owner</th><th>Destination</th><th>Dates</th><th>Days</th><th>Retro?</th><th>Purpose</th><th style="width:320px">Decision</th></tr>
+          </thead>
+          <tbody>
+          {% for d in duty_queue %}
+            <tr>
+              <td>{{ d.duty_key }}</td>
+              <td>{{ employee_lookup.get(d.owner_id, "—") }}</td>
+              <td>{{ d.destination }}</td>
+              <td>{{ d.start_date }} → {{ d.end_date }}</td>
+              <td>{{ d.working_days }}</td>
+              <td>{{ "Yes" if d.is_retroactive else "No" }}</td>
+              <td class="small">{{ d.purpose }}{% if d.is_retroactive %}<br><span class="text-muted">Justification: {{ d.retro_justification }}</span>{% endif %}</td>
+              <td>
+                <form method="post" action="/approvals/duty/{{ d.id }}/decide" class="d-flex gap-1">
+                  <input type="text" name="note" class="form-control form-control-sm" placeholder="Note (required to reject)">
+                  <button class="btn btn-sm btn-success" name="decision" value="Approved" type="submit">Approve</button>
+                  <button class="btn btn-sm btn-outline-danger" name="decision" value="Rejected" type="submit"
+                          onclick="return confirm('Reject this duty?');">Reject</button>
+                </form>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="8" class="text-center text-muted py-4">No official duties are awaiting your decision.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

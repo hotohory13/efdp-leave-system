@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Departments{% endblock %}
+{% block content %}
+<h4 class="mb-3"><a href="/admin" class="text-decoration-none text-muted"><i class="fa-solid fa-arrow-left"></i></a> Departments</h4>
+
+<div class="row g-3">
+  <div class="col-md-8">
+    <div class="card card-efdp">
+      <div class="card-body">
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Code</th><th>Name (EN)</th><th>Name (AR)</th><th>Active</th></tr></thead>
+          <tbody>
+          {% for d in departments %}
+            <tr>
+              <td>{{ d.code }}</td>
+              <td>{{ d.name_en }}</td>
+              <td>{{ d.name_ar }}</td>
+              <td>{{ "Yes" if d.is_active else "No" }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="4" class="text-center text-muted py-4">No departments yet.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card card-efdp">
+      <div class="card-body">
+        <h6 class="card-title">Add Department</h6>
+        <form method="post" action="/admin/departments">
+          <div class="mb-2"><label class="form-label small">Code</label><input name="code" class="form-control form-control-sm" required maxlength="16" placeholder="e.g. EEC"></div>
+          <div class="mb-2"><label class="form-label small">Name (EN)</label><input name="name_en" class="form-control form-control-sm" required></div>
+          <div class="mb-2"><label class="form-label small">Name (AR)</label><input name="name_ar" class="form-control form-control-sm" required dir="rtl"></div>
+          <button class="btn btn-sm btn-primary w-100" type="submit">Add</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

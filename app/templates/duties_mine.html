@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}My Official Duties{% endblock %}
+{% block content %}
+<h4 class="mb-3">My Official Duties (مأموريات)</h4>
+<div class="card card-efdp">
+  <div class="card-body">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr><th>Key</th><th>Destination</th><th>Dates</th><th>Days</th><th>Retro?</th><th>Status</th><th>Note</th></tr>
+      </thead>
+      <tbody>
+      {% for d in duties %}
+        <tr>
+          <td>{{ d.duty_key }}</td>
+          <td>{{ d.destination }}</td>
+          <td>{{ d.start_date }} → {{ d.end_date }}</td>
+          <td>{{ d.working_days }}</td>
+          <td>{{ "Yes" if d.is_retroactive else "No" }}</td>
+          <td><span class="badge badge-status-{{ 'PendingStage1' if d.status.value == 'Pending' else d.status.value }}">{{ d.status.value }}</span></td>
+          <td class="small text-muted">{{ d.decision_note or "" }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">No official duties registered yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<a href="/duties/new" class="btn btn-sm btn-primary mt-3">Register a new duty</a>
+{% endblock %}

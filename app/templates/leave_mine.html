@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}My Requests{% endblock %}
+{% block content %}
+<h4 class="mb-3">My Leave Requests</h4>
+<div class="card card-efdp">
+  <div class="card-body">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr><th>Key</th><th>Type</th><th>Dates</th><th>Days</th><th>Substitute</th><th>Status</th><th>Note</th><th></th></tr>
+      </thead>
+      <tbody>
+      {% for r in requests %}
+        <tr>
+          <td>{{ r.request_key }}</td>
+          <td>{{ leave_type_lookup.get(r.leave_type_id, "—") }}</td>
+          <td>{{ r.start_date }} → {{ r.end_date }}</td>
+          <td>{{ r.working_days }}</td>
+          <td>{{ employee_lookup.get(r.substitute_id, "—") }}</td>
+          <td><span class="badge badge-status-{{ r.status.value }}">{{ r.status.value }}</span></td>
+          <td class="small text-muted">{{ r.decision_note or "" }}</td>
+          <td>
+            {% if r.status.value in ["PendingStage1", "PendingStage2"] %}
+            <form method="post" action="/leave/{{ r.id }}/cancel" onsubmit="return confirm('Cancel this request?');">
+              <button class="btn btn-sm btn-outline-danger">Cancel</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="8" class="text-center text-muted py-4">No requests yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}New Official Duty{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card card-efdp">
+      <div class="card-body">
+        <h5 class="card-title mb-3"><i class="fa-solid fa-briefcase text-primary"></i> Register Official Duty (مأمورية)</h5>
+        <div class="alert alert-info small py-2">
+          <i class="fa-solid fa-circle-info"></i> Official duties do not consume leave entitlement. Use this to register
+          advance or retroactive attendance away from campus for a work purpose.
+        </div>
+
+        <form method="post" action="/duties/new">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Start date</label>
+              <input type="date" name="start_date" class="form-control" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">End date</label>
+              <input type="date" name="end_date" class="form-control" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Destination</label>
+            <input type="text" name="destination" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Purpose</label>
+            <textarea name="purpose" class="form-control" rows="3" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Evidence link <span class="text-muted small">(optional)</span></label>
+            <input type="url" name="evidence_url" class="form-control" placeholder="https://...">
+          </div>
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" value="1" id="isRetro" name="is_retroactive">
+            <label class="form-check-label" for="isRetro">This is a retroactive (late-filed) registration</label>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Retroactive justification <span class="text-muted small">(required if retroactive)</span></label>
+            <textarea name="retro_justification" class="form-control" rows="2"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Submit</button>
+          <a href="/" class="btn btn-link">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

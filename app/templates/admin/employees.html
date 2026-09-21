@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Employees{% endblock %}
+{% block content %}
+<h4 class="mb-3"><a href="/admin" class="text-decoration-none text-muted"><i class="fa-solid fa-arrow-left"></i></a> Employees (Directory)</h4>
+
+<div class="row g-3">
+  <div class="col-md-8">
+    <div class="card card-efdp">
+      <div class="card-body" style="max-height:640px; overflow-y:auto;">
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Code</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th style="width:160px"></th></tr></thead>
+          <tbody>
+          {% for e in employees %}
+            <tr>
+              <td>{{ e.employee_code }}</td>
+              <td>{{ e.full_name_en }}</td>
+              <td>{{ e.email }}</td>
+              <td>{{ e.role.value }}</td>
+              <td><span class="badge {{ 'bg-success' if e.employment_status.value == 'Active' else 'bg-secondary' }}">{{ e.employment_status.value }}</span></td>
+              <td class="d-flex gap-1">
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editEmployeeModal{{ e.id }}">
+                  <i class="fa-solid fa-pen"></i> Edit
+                </button>
+                {% if e.employment_status.value == "Active" %}
+                <form method="post" action="/admin/employees/{{ e.id }}/deactivate" onsubmit="return confirm('Deactivate this employee?');">
+                  <button class="btn btn-sm btn-outline-danger" type="submit">Deactivate</button>
+                </form>
+                {% endif %}
+              </td>
+            </tr>
+
+            <!-- Edit Employee Modal -->
+            <div class="modal fade" id="editEmployeeModal{{ e.id }}" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <form method="post" action="/admin/employees/{{ e.id }}/edit">
+                    <div class="modal-header">
+                      <h6 class="modal-title"><i class="fa-solid fa-user-pen text-primary"></i> Edit Employee — {{ e.employee_code }}</h6>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="mb-2">
+                        <label class="form-label small">Full Name / Title</label>
+                        <input type="text" name="full_name_en" class="form-control form-control-sm" value="{{ e.full_name_en }}" required>
+                      </div>
+                      <div class="mb-2">
+                        <label class="form-label small">Email</label>
+                        <input type="email" name="email" class="form-control form-control-sm" value="{{ e.email }}" required>
+                      </div>
+                      <div class="mb-2">
+                        <label class="form-label small">Department</label>
+                        <select name="department_id" class="form-select form-select-sm" required>
+                          {% for d in departments %}
+                          <option value="{{ d.id }}" {{ "selected" if d.id == e.department_id else "" }}>{{ d.code }} — {{ d.name_en }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <div class="mb-2">
+                        <label class="form-label small">Role</label>
+                        <select name="role" class="form-select form-select-sm" required>
+                          {% for r in roles %}
+                          <option value="{{ r.value }}" {{ "selected" if r.value == e.role.value else "" }}>{{ r.value }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" value="1" name="is_active" id="isActive{{ e.id }}"
+                               {{ "checked" if e.employment_status.value == "Active" else "" }}>
+                        <label class="form-check-label small" for="isActive{{ e.id }}">Active</label>
+                      </div>
+                      <hr>
+                      <div class="mb-1">
+                        <label class="form-label small">New Password / Reset Password</label>
+                        <input type="password" name="new_password" class="form-control form-control-sm" minlength="6" placeholder="Leave blank to keep current password">
+                        <div class="form-text small">Only fill this in to reset the employee's password — leave it empty to leave the password unchanged.</div>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                      <button type="submit" class="btn btn-sm btn-primary">Save Changes</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          {% else %}
+            <tr><td colspan="6" class="text-center text-muted py-4">No employees yet.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card card-efdp">
+      <div class="card-body">
+        <h6 class="card-title">Add Employee</h6>
+        <form method="post" action="/admin/employees">
+          <div class="mb-2"><label class="form-label small">Employee code</label><input name="employee_code" class="form-control form-control-sm" required placeholder="EEC-0099"></div>
+          <div class="mb-2"><label class="form-label small">Name (EN)</label><input name="full_name_en" class="form-control form-control-sm" required></div>
+          <div class="mb-2"><label class="form-label small">Name (AR)</label><input name="full_name_ar" class="form-control form-control-sm" required dir="rtl"></div>
+          <div class="mb-2"><label class="form-label small">University email</label><input type="email" name="email" class="form-control form-control-sm" required></div>
+          <div class="mb-2"><label class="form-label small">Temporary password</label><input type="password" name="password" class="form-control form-control-sm" required minlength="6"></div>
+          <div class="mb-2">
+            <label class="form-label small">Department</label>
+            <select name="department_id" class="form-select form-select-sm" required>
+              {% for d in departments %}<option value="{{ d.id }}">{{ d.code }} — {{ d.name_en }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small">Role</label>
+            <select name="role" class="form-select form-select-sm" required>
+              {% for r in roles %}<option value="{{ r.value }}">{{ r.value }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="mb-2"><label class="form-label small">Academic rank <span class="text-muted">(optional)</span></label><input name="academic_rank" class="form-control form-control-sm"></div>
+          <button class="btn btn-sm btn-primary w-100" type="submit">Add</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

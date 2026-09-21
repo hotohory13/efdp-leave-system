@@ -1,0 +1,53 @@
+:root {
+    --efdp-navy: #0f2540;
+    --efdp-gold: #d4a017;
+    --efdp-blue: #1c4b82;
+}
+
+body {
+    background-color: #f5f7fa;
+}
+
+.efdp-navbar {
+    background: linear-gradient(90deg, var(--efdp-navy) 0%, var(--efdp-blue) 100%);
+}
+
+.efdp-footer {
+    background-color: var(--efdp-navy);
+    color: #e9edf2;
+    border-top: 3px solid var(--efdp-gold);
+}
+
+.card-efdp {
+    border: none;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 10px rgba(15, 37, 64, 0.08);
+}
+
+.stat-card {
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    color: #fff;
+}
+
+.stat-card.navy { background: var(--efdp-navy); }
+.stat-card.blue { background: var(--efdp-blue); }
+.stat-card.gold { background: var(--efdp-gold); color: #1a1a1a; }
+
+.login-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--efdp-navy) 0%, var(--efdp-blue) 100%);
+}
+
+.login-card {
+    max-width: 420px;
+    width: 100%;
+}
+
+.badge-status-PendingStage1, .badge-status-PendingStage2 { background-color: #d4a017 !important; color:#1a1a1a; }
+.badge-status-Approved { background-color: #1c8a4c !important; }
+.badge-status-Rejected { background-color: #b83232 !important; }
+.badge-status-Cancelled { background-color: #6c757d !important; }

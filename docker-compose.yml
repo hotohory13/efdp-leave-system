@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: efdp
+      POSTGRES_PASSWORD: efdp
+      POSTGRES_DB: efdp
+    volumes:
+      - efdp_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U efdp"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://efdp:efdp@db:5432/efdp
+      SECRET_KEY: ${SECRET_KEY:-change-this-to-a-long-random-string-in-production}
+      APP_NAME: EFDP - Employee & Leave Management System
+      FACULTY_NAME: Faculty of Engineering, Ahram Canadian University
+      DEVELOPER_CREDIT: "Developer: ENG. Omar Yasser"
+      ENVIRONMENT: production
+      WEEKEND_DAYS: "4,5"
+      CASUAL_LEAVE_DEDUCTS_FROM_ANNUAL: "false"
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-svc-efdp@acu.edu.eg}
+    ports:
+      - "8000:8000"
+
+volumes:
+  efdp_pg_data:

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EFDP{% endblock %} · {{ app_name }}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/efdp.css" rel="stylesheet">
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+{% if user %}
+<nav class="navbar navbar-expand-lg navbar-dark efdp-navbar">
+  <div class="container-fluid">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+      <img src="/static/img/logo.png" alt="Faculty logo" height="40">
+      <span class="fw-semibold">Faculty of Engineering</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMain">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link" href="/">Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="/leave/new">New Leave Request</a></li>
+        <li class="nav-item"><a class="nav-link" href="/leave/mine">My Requests</a></li>
+        <li class="nav-item"><a class="nav-link" href="/duties/new">Official Duty</a></li>
+        <li class="nav-item"><a class="nav-link" href="/duties/mine">My Duties</a></li>
+        <li class="nav-item"><a class="nav-link" href="/attendance/mine">My Attendance</a></li>
+        {% if user.role.value in ["HeadOfDepartment", "ViceDean", "Admin"] %}
+        <li class="nav-item"><a class="nav-link" href="/approvals">Approval Queue</a></li>
+        {% endif %}
+        {% if user.role.value == "Admin" %}
+        <li class="nav-item"><a class="nav-link" href="/admin">Admin Panel</a></li>
+        {% endif %}
+      </ul>
+      <span class="navbar-text text-light me-3">
+        <i class="fa-regular fa-user"></i> {{ user.full_name_en }}
+        <span class="badge bg-light text-dark ms-1">{{ user.role.value }}</span>
+      </span>
+      <form action="/logout" method="post" class="d-inline">
+        <button class="btn btn-outline-light btn-sm" type="submit">Log out</button>
+      </form>
+    </div>
+  </div>
+</nav>
+{% endif %}
+
+<main class="container flex-grow-1 py-4">
+  {% if error %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      {{ error }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  {% endif %}
+  {% if success %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      {{ success }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  {% endif %}
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="efdp-footer text-center py-3 mt-auto">
+  <div class="container">
+    <div class="fw-semibold">{{ faculty_name }}</div>
+    <div class="small text-muted">{{ developer_credit }}</div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

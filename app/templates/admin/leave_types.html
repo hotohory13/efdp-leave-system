@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Leave Types{% endblock %}
+{% block content %}
+<h4 class="mb-3"><a href="/admin" class="text-decoration-none text-muted"><i class="fa-solid fa-arrow-left"></i></a> Leave Types</h4>
+
+<div class="alert alert-warning small">
+  <i class="fa-solid fa-triangle-exclamation"></i> "Deducts from Annual" for عارضة (Casual Leave) was left
+  <strong>Unconfirmed</strong> in the source EFSOP workbook (OD-03). Confirm against لائحة شؤون العاملين before
+  relying on this in production — see <code>docs/BUSINESS_RULES.md</code>.
+</div>
+
+<div class="row g-3">
+  <div class="col-md-8">
+    <div class="card card-efdp">
+      <div class="card-body">
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Code</th><th>Name (EN)</th><th>Annual cap</th><th>Max consecutive</th><th>Deducts from Annual</th><th>Active</th><th></th></tr></thead>
+          <tbody>
+          {% for lt in leave_types %}
+            <tr>
+              <td>{{ lt.code }}</td>
+              <td>{{ lt.name_en }}</td>
+              <td>{{ lt.annual_cap }}</td>
+              <td>{{ lt.max_consecutive_days }}</td>
+              <td>{{ "Yes" if lt.deducts_from_annual else "No" }}</td>
+              <td><span class="badge {{ 'bg-success' if lt.is_active else 'bg-secondary' }}">{{ "Active" if lt.is_active else "Inactive" }}</span></td>
+              <td>
+                <form method="post" action="/admin/leave-types/{{ lt.id }}/toggle">
+                  <button class="btn btn-sm btn-outline-secondary" type="submit">{{ "Deactivate" if lt.is_active else "Activate" }}</button>
+                </form>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="7" class="text-center text-muted py-4">No leave types yet.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card card-efdp">
+      <div class="card-body">
+        <h6 class="card-title">Add Leave Type</h6>
+        <form method="post" action="/admin/leave-types">
+          <div class="mb-2"><label class="form-label small">Code</label><input name="code" class="form-control form-control-sm" required placeholder="e.g. اعتيادي"></div>
+          <div class="mb-2"><label class="form-label small">Name (EN)</label><input name="name_en" class="form-control form-control-sm" required></div>
+          <div class="mb-2"><label class="form-label small">Name (AR)</label><input name="name_ar" class="form-control form-control-sm" required dir="rtl"></div>
+          <div class="mb-2"><label class="form-label small">Annual cap (days)</label><input type="number" name="annual_cap" class="form-control form-control-sm" required min="0"></div>
+          <div class="mb-2"><label class="form-label small">Max consecutive days</label><input type="number" name="max_consecutive_days" class="form-control form-control-sm" required min="1"></div>
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" value="1" id="deductsFromAnnual" name="deducts_from_annual">
+            <label class="form-check-label small" for="deductsFromAnnual">Deducts from Annual balance</label>
+          </div>
+          <button class="btn btn-sm btn-primary w-100" type="submit">Add</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

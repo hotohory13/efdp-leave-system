@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: efdp-leave-system
+    env: python
+    region: frankfurt
+    plan: free
+    buildCommand: "pip install -r requirements.txt && python -m scripts.seed_data --demo"
+    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ENVIRONMENT
+        value: production
+      - key: APP_NAME
+        value: "EFDP - Employee & Leave Management System"
+      - key: FACULTY_NAME
+        value: "Faculty of Engineering, Ahram Canadian University"
+      - key: DEVELOPER_CREDIT
+        value: "Developer: ENG. Omar Yasser"
+      - key: DATABASE_URL
+        value: "sqlite+aiosqlite:///./efdp.db"
+      - key: WEEKEND_DAYS
+        value: "4,5"
+      - key: CASUAL_LEAVE_DEDUCTS_FROM_ANNUAL
+        value: "false"

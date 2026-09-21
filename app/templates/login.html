@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in · {{ app_name }}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/efdp.css" rel="stylesheet">
+</head>
+<body>
+<div class="login-wrapper">
+  <div class="card login-card shadow-lg">
+    <div class="card-body p-4 text-center">
+      <img src="/static/img/logo.png" alt="Faculty logo" height="90" class="mb-3">
+      <h4 class="mb-1">EFDP</h4>
+      <p class="text-muted small mb-4">Employee &amp; Leave Management System</p>
+
+      {% if error %}
+        <div class="alert alert-danger py-2">{{ error }}</div>
+      {% endif %}
+
+      <form method="post" action="/login" class="text-start">
+        <div class="mb-3">
+          <label class="form-label">University email</label>
+          <input type="email" name="email" class="form-control" required autofocus value="{{ email or '' }}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Sign in</button>
+      </form>
+    </div>
+  </div>
+</div>
+</body>
+</html>

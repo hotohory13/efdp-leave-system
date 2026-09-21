@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h3 class="mb-4">Welcome, {{ user.full_name_en }}</h3>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-12">
+    <div class="card card-efdp">
+      <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div>
+          <h5 class="card-title mb-1"><i class="fa-solid fa-clock text-primary"></i> Today's Attendance</h5>
+          <div class="text-muted small">{{ today.strftime('%A, %d %B %Y') }}</div>
+          {% if today_attendance and today_attendance.check_in %}
+            <div class="mt-2">
+              <span class="badge bg-light text-dark border me-2">
+                <i class="fa-solid fa-right-to-bracket text-success"></i>
+                Checked in: {{ today_attendance.check_in | local_time }}
+              </span>
+              {% if today_attendance.check_out %}
+                <span class="badge bg-light text-dark border me-2">
+                  <i class="fa-solid fa-right-from-bracket text-danger"></i>
+                  Checked out: {{ today_attendance.check_out | local_time }}
+                </span>
+                <span class="badge bg-light text-dark border">
+                  <i class="fa-solid fa-hourglass-half text-primary"></i>
+                  {{ '%.2f'|format(today_attendance.total_hours) }} hours logged
+                </span>
+              {% endif %}
+            </div>
+          {% endif %}
+        </div>
+        <div>
+          {% if not today_attendance or not today_attendance.check_in %}
+            <form method="post" action="/attendance/check-in">
+              <button class="btn btn-success" type="submit"><i class="fa-solid fa-right-to-bracket"></i> Check In</button>
+            </form>
+          {% elif not today_attendance.check_out %}
+            <form method="post" action="/attendance/check-out">
+              <button class="btn btn-warning" type="submit"><i class="fa-solid fa-right-from-bracket"></i> Check Out</button>
+            </form>
+          {% else %}
+            <span class="badge bg-success">Attendance complete for today</span>
+          {% endif %}
+          <div class="mt-2 text-end">
+            <a href="/attendance/mine" class="small">View my attendance history →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="stat-card navy">
+      <div class="small text-uppercase opacity-75">My pending requests</div>
+      <div class="display-6">{{ summary.my_pending_requests }}</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card blue">
+      <div class="small text-uppercase opacity-75">Faculty-wide pending</div>
+      <div class="display-6">{{ summary.faculty_metrics.get('pending_leave_requests', '—') }}</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card gold">
+      <div class="small text-uppercase opacity-75">Approved this cycle</div>
+      <div class="display-6">{{ summary.faculty_metrics.get('approved_leave_requests', '—') }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card card-efdp">
+      <div class="card-body">
+        <h5 class="card-title"><i class="fa-solid fa-calendar-days text-primary"></i> My Leave Balances ({{ year }})</h5>
+        {% if balances %}
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Type</th><th>Entitled</th><th>Used</th><th>Pending</th><th>Remaining</th></tr></thead>
+          <tbody>
+          {% for b in balances %}
+            <tr>
+              <td>{{ b.leave_type_code }} <span class="text-muted small">({{ b.leave_type_name_en }})</span></td>
+              <td>{{ b.entitled_days }}</td>
+              <td>{{ b.used_days }}</td>
+              <td>{{ b.pending_days }}</td>
+              <td class="fw-semibold">{{ b.remaining_days }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted mb-0">No balance records yet for this year.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card card-efdp">
+      <div class="card-body">
+        <h5 class="card-title"><i class="fa-solid fa-clock-rotate-left text-primary"></i> Recent Requests</h5>
+        {% if recent_requests %}
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Key</th><th>Dates</th><th>Status</th></tr></thead>
+          <tbody>
+          {% for r in recent_requests %}
+            <tr>
+              <td>{{ r.request_key }}</td>
+              <td>{{ r.start_date }} → {{ r.end_date }}</td>
+              <td><span class="badge badge-status-{{ r.status.value }}">{{ r.status.value }}</span></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted mb-0">No requests submitted yet.</p>
+        {% endif %}
+        <a href="/leave/new" class="btn btn-sm btn-primary mt-3">Submit a leave request</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

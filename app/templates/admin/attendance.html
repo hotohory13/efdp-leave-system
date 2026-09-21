@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Attendance Management{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0"><a href="/admin" class="text-decoration-none text-muted"><i class="fa-solid fa-arrow-left"></i></a> Attendance Management</h4>
+  <a href="/admin/attendance/report/pdf?department_id={{ filters.department_id or '' }}&employee_id={{ filters.employee_id or '' }}&start_date={{ filters.start_date or '' }}&end_date={{ filters.end_date or '' }}"
+     class="btn btn-primary">
+    <i class="fa-solid fa-file-pdf"></i> Export PDF Report
+  </a>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-3 col-sm-6">
+    <div class="stat-card navy">
+      <div class="small text-uppercase opacity-75">Total Days</div>
+      <div class="display-6">{{ summary.total_days }}</div>
+    </div>
+  </div>
+  <div class="col-md-3 col-sm-6">
+    <div class="stat-card blue">
+      <div class="small text-uppercase opacity-75">Total Present</div>
+      <div class="display-6">{{ summary.total_present }}</div>
+    </div>
+  </div>
+  <div class="col-md-3 col-sm-6">
+    <div class="stat-card gold">
+      <div class="small text-uppercase opacity-75">Total Incomplete</div>
+      <div class="display-6">{{ summary.total_incomplete }}</div>
+    </div>
+  </div>
+  <div class="col-md-3 col-sm-6">
+    <div class="stat-card navy">
+      <div class="small text-uppercase opacity-75">Average Hours</div>
+      <div class="display-6">{{ summary.average_hours }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="card card-efdp mb-3">
+  <div class="card-body">
+    <form method="get" action="/admin/attendance" class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label small mb-0">Department</label>
+        <select name="department_id" class="form-select form-select-sm">
+          <option value="">All departments</option>
+          {% for d in departments %}
+            <option value="{{ d.id }}" {% if filters.department_id == d.id %}selected{% endif %}>{{ d.name_en }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small mb-0">Employee</label>
+        <select name="employee_id" class="form-select form-select-sm">
+          <option value="">All employees</option>
+          {% for e in employees %}
+            <option value="{{ e.id }}" {% if filters.employee_id == e.id %}selected{% endif %}>{{ e.full_name_en }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-0">Start Date</label>
+        <input type="date" name="start_date" value="{{ filters.start_date or '' }}" class="form-control form-control-sm">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-0">End Date</label>
+        <input type="date" name="end_date" value="{{ filters.end_date or '' }}" class="form-control form-control-sm">
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-sm btn-primary w-100" type="submit"><i class="fa-solid fa-filter"></i> Filter</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card card-efdp">
+  <div class="card-body">
+    <table class="table table-sm mb-0">
+      <thead>
+        <tr>
+          <th>Employee Name</th>
+          <th>Department</th>
+          <th>Date</th>
+          <th>Check-In</th>
+          <th>Check-Out</th>
+          <th>Total Hours</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for a, e, d in rows %}
+        <tr>
+          <td>{{ e.full_name_en }}</td>
+          <td>{{ d.name_en }}</td>
+          <td>{{ a.date }}</td>
+          <td>{{ a.check_in | local_time }}</td>
+          <td>{{ a.check_out | local_time }}</td>
+          <td>{{ '%.2f'|format(a.total_hours) if a.total_hours is not none else '—' }}</td>
+          <td>
+            <span class="badge
+              {% if a.status.value == 'Present' %}bg-success
+              {% elif a.status.value == 'Incomplete' %}bg-warning text-dark
+              {% else %}bg-secondary{% endif %}">
+              {{ a.status.value }}
+            </span>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">No attendance records match the selected filters.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

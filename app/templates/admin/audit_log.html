@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Audit Log{% endblock %}
+{% block content %}
+<h4 class="mb-3"><a href="/admin" class="text-decoration-none text-muted"><i class="fa-solid fa-arrow-left"></i></a> Audit Log</h4>
+<div class="card card-efdp">
+  <div class="card-body" style="max-height:700px; overflow-y:auto;">
+    <table class="table table-sm mb-0">
+      <thead><tr><th>When (UTC)</th><th>Entity</th><th>Key</th><th>Action</th><th>Actor</th><th>Details</th></tr></thead>
+      <tbody>
+      {% for a in entries %}
+        <tr>
+          <td class="small">{{ a.occurred_at }}</td>
+          <td>{{ a.entity_type }}</td>
+          <td>{{ a.entity_key }}</td>
+          <td>{{ a.action }}</td>
+          <td>{{ a.resolved_actor_id or "—" }}</td>
+          <td class="small text-muted">{{ a.details or "" }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6" class="text-center text-muted py-4">No audit entries yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

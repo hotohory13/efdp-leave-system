@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Notification Log{% endblock %}
+{% block content %}
+<h4 class="mb-3"><a href="/admin" class="text-decoration-none text-muted"><i class="fa-solid fa-arrow-left"></i></a> Notification Log</h4>
+<div class="card card-efdp">
+  <div class="card-body" style="max-height:700px; overflow-y:auto;">
+    <table class="table table-sm mb-0">
+      <thead><tr><th>When (UTC)</th><th>Recipient</th><th>Subject</th><th>Template</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for n in entries %}
+        <tr>
+          <td class="small">{{ n.occurred_at }}</td>
+          <td>{{ n.recipient_email }}</td>
+          <td>{{ n.subject }}</td>
+          <td class="small text-muted">{{ n.template_key }}</td>
+          <td>
+            <span class="badge {{ 'bg-success' if n.status.value == 'Sent' else ('bg-secondary' if n.status.value == 'SkippedNoSmtp' else 'bg-danger') }}">
+              {{ n.status.value }}
+            </span>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5" class="text-center text-muted py-4">No notifications dispatched yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

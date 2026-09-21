@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<h4 class="mb-3"><a href="/admin" class="text-decoration-none text-muted"><i class="fa-solid fa-arrow-left"></i></a> Settings</h4>
+
+<div class="card card-efdp">
+  <div class="card-body">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr><th style="width:220px">Key</th><th>Value</th><th class="text-muted">Description</th><th style="width:100px"></th></tr></thead>
+      <tbody>
+      {% for s in app_settings %}
+        <tr>
+          <form method="post" action="/admin/settings/{{ s.key }}">
+          <td><code>{{ s.key }}</code></td>
+          <td><input type="text" name="value" class="form-control form-control-sm" value="{{ s.value }}"></td>
+          <td class="small text-muted">{{ s.description or "" }}</td>
+          <td><button class="btn btn-sm btn-primary" type="submit">Save</button></td>
+          </form>
+        </tr>
+      {% else %}
+        <tr><td colspan="4" class="text-center text-muted py-4">No settings loaded yet — run <code>scripts/seed_data.py</code>.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
