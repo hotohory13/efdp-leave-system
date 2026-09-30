@@ -63,6 +63,51 @@
   {% block content %}{% endblock %}
 </main>
 
+{% if user and user.must_change_password %}
+<!-- First Login Change Password Modal Window -->
+<div class="modal fade show" id="firstLoginModal" tabindex="-1" aria-labelledby="firstLoginModalLabel" aria-modal="true" role="dialog" style="display: block; background: rgba(0,0,0,0.75); z-index: 1060;">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="firstLoginModalLabel"><i class="fa-solid fa-key me-2"></i> Set Your New Password</h5>
+      </div>
+      <form method="post" action="/auth/change-password-first-login" onsubmit="return validateFirstPassword(this);">
+        <div class="modal-body p-4">
+          <div class="alert alert-info py-2 small mb-3">
+            <i class="fa-solid fa-info-circle me-1"></i> Welcome to {{ app_name }}! This is your first login. Please create a new password for your account to continue.
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">New Password</label>
+            <input type="password" name="new_password" id="first_new_pw" class="form-control form-control-sm" placeholder="At least 6 characters" minlength="6" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Confirm New Password</label>
+            <input type="password" name="confirm_password" id="first_confirm_pw" class="form-control form-control-sm" placeholder="Re-enter new password" minlength="6" required>
+          </div>
+          <div id="first_pw_error" class="alert alert-danger py-1 small d-none mb-0">Passwords do not match.</div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="submit" class="btn btn-primary w-100 fw-bold"><i class="fa-solid fa-check me-1"></i> Save New Password & Continue</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+function validateFirstPassword(form) {
+  const p1 = form.querySelector('#first_new_pw').value;
+  const p2 = form.querySelector('#first_confirm_pw').value;
+  const err = form.querySelector('#first_pw_error');
+  if (p1 !== p2) {
+    err.classList.remove('d-none');
+    return false;
+  }
+  err.classList.add('d-none');
+  return true;
+}
+</script>
+{% endif %}
+
 <footer class="efdp-footer text-center py-3 mt-auto">
   <div class="container">
     <div class="fw-semibold">{{ faculty_name }}</div>
@@ -71,5 +116,6 @@
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>

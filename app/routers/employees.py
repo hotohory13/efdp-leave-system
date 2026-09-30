@@ -50,12 +50,14 @@ async def create_employee(
         full_name_ar=payload.full_name_ar,
         email=payload.email.lower(),
         hashed_password=hash_password(payload.password),
+        must_change_password=True,
         department_id=payload.department_id,
         program_id=payload.program_id,
         academic_rank=payload.academic_rank,
         role=payload.role,
         supervisor_id=payload.supervisor_id,
     )
+
     db.add(employee)
     await db.commit()
     await db.refresh(employee)

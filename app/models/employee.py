@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from sqlalchemy import Date, DateTime, Enum, ForeignKey, Integer, String, func
+from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -21,6 +21,8 @@ class Employee(Base):
     full_name_ar: Mapped[str] = mapped_column(String(200), nullable=False)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+    must_change_password: Mapped[bool] = mapped_column(Boolean, default=True, server_default="1", nullable=False)
+
 
     department_id: Mapped[int] = mapped_column(ForeignKey("departments.id"), nullable=False)
     program_id: Mapped[int | None] = mapped_column(ForeignKey("programs.id"), nullable=True)

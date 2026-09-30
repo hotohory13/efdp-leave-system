@@ -50,6 +50,8 @@ class EmployeeOut(BaseModel):
     department_id: int
     academic_rank: str | None = None
     employment_status: EmploymentStatus
+    must_change_password: bool = True
+
 
 
 class EmployeeCreate(BaseModel):

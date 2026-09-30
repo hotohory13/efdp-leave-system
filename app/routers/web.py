@@ -92,6 +92,28 @@ async def logout_submit():
     return response
 
 
+@router.post("/auth/change-password-first-login")
+async def change_password_first_login(
+    request: Request,
+    new_password: str = Form(...),
+    confirm_password: str = Form(...),
+    db: AsyncSession = Depends(get_db),
+    employee: Employee | None = Depends(get_current_employee_optional),
+):
+    if not employee:
+        return RedirectResponse("/login", status_code=303)
+    if new_password != confirm_password or len(new_password) < 6:
+        return RedirectResponse("/?error=Password+must+be+at+least+6+characters+and+match", status_code=303)
+
+    db_employee = await db.get(Employee, employee.id)
+    if db_employee:
+        db_employee.hashed_password = hash_password(new_password)
+        db_employee.must_change_password = False
+        await db.commit()
+    return RedirectResponse("/?success=Password+updated+successfully", status_code=303)
+
+
+
 # --- Dashboard -----------------------------------------------------------
 @router.get("/")
 async def dashboard_page(
@@ -589,11 +611,13 @@ async def admin_employees_create(
                 full_name_ar=full_name_ar.strip(),
                 email=email.strip().lower(),
                 hashed_password=hash_password(password),
+                must_change_password=True,
                 department_id=department_id,
                 academic_rank=academic_rank or None,
                 role=EmployeeRole(role),
             )
         )
+
         await db.commit()
     return RedirectResponse("/admin/employees", status_code=303)
 
