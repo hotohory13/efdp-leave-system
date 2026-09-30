@@ -42,6 +42,7 @@ async def init_models():
         if result.first() is None:
             from scripts.seed_data import (
                 seed_approval_routes,
+                seed_custom_accounts,
                 seed_demo_admin,
                 seed_departments,
                 seed_employees,
@@ -56,5 +57,7 @@ async def init_models():
             await seed_approval_routes(db)
             await seed_employees(db, sheet_name="Example", default_password="Passw0rd!")
             await seed_demo_admin(db)
+            await seed_custom_accounts(db)
             await db.commit()
+
 

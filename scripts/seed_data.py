@@ -280,6 +280,70 @@ async def seed_demo_admin(db) -> None:
         logger.info("Demo admin created: admin@efdp.local / Admin@12345 — CHANGE THIS before any real deployment.")
 
 
+async def seed_custom_accounts(db) -> None:
+    """Pre-seed faculty accounts created during user testing so they persist across Vercel deployments."""
+    dept_result = await db.execute(select(Department).where(Department.code == "EEC"))
+    department = dept_result.scalar_one_or_none()
+    if department is None:
+        departments_result = await db.execute(select(Department).order_by(Department.id))
+        department = departments_result.scalars().first()
+    if department is None:
+        logger.warning("No department found — cannot create custom accounts.")
+        return
+
+    custom_users = [
+        {
+            "email": "asser.mohamed@acu.edu.eg",
+            "employee_code": "EEC-0144",
+            "full_name_en": "Asser Mohamed",
+            "full_name_ar": "آسر محمد",
+            "role": EmployeeRole.TEACHING_ASSISTANT,
+            "password": "Passw0rd!",
+        }
+    ]
+
+    for user_data in custom_users:
+        result = await db.execute(select(Employee).where(Employee.email == user_data["email"]))
+        employee = result.scalar_one_or_none()
+        if employee is None:
+            employee = Employee(
+                employee_code=user_data["employee_code"],
+                full_name_en=user_data["full_name_en"],
+                full_name_ar=user_data["full_name_ar"],
+                email=user_data["email"],
+                hashed_password=hash_password(user_data["password"]),
+                department_id=department.id,
+                role=user_data["role"],
+                employment_status=EmploymentStatus.ACTIVE,
+            )
+            db.add(employee)
+            await db.flush()
+
+            annual_type_res = await db.execute(select(LeaveType).where(LeaveType.code == "اعتيادي"))
+            annual_type = annual_type_res.scalar_one_or_none()
+            if annual_type:
+                bal_res = await db.execute(
+                    select(LeaveBalance).where(
+                        LeaveBalance.employee_id == employee.id,
+                        LeaveBalance.leave_type_id == annual_type.id,
+                        LeaveBalance.year == 2026,
+                    )
+                )
+                if bal_res.scalar_one_or_none() is None:
+                    bal = LeaveBalance(
+                        employee_id=employee.id,
+                        leave_type_id=annual_type.id,
+                        year=2026,
+                        entitled_days=21.0,
+                        used_days=0.0,
+                        pending_days=0.0,
+                    )
+                    db.add(bal)
+                    await db.flush()
+            logger.info("Custom account seeded: %s with password %s", user_data["email"], user_data["password"])
+
+
+
 async def _verify_directory_health(db) -> None:
     """Mirrors 05-Verify.ps1 from the original design: warns (does not
     fail) if any active department lacks exactly one active Head of
@@ -327,7 +391,9 @@ async def run(demo: bool) -> None:
             logger.warning("--demo: seeding sample staff from the Example sheet and a break-glass admin. DEV/LOCAL ONLY.")
             await seed_employees(db, sheet_name="Example", default_password="Passw0rd!")
             await seed_demo_admin(db)
+            await seed_custom_accounts(db)
             await db.commit()
+
 
         await _verify_directory_health(db)
 
