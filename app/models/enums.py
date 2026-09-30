@@ -21,11 +21,22 @@ class EmploymentStatus(str, enum.Enum):
 
 class LeaveRequestStatus(str, enum.Enum):
     PENDING = "Pending"
-    PENDING_STAGE_1 = "PendingStage1"
-    PENDING_STAGE_2 = "PendingStage2"
+    PENDING_STAGE_1 = "Pending"
+    PENDING_STAGE_2 = "Pending"
     APPROVED = "Approved"
     REJECTED = "Rejected"
     CANCELLED = "Cancelled"
+
+    @classmethod
+    def _missing_(cls, value):
+        if isinstance(value, str):
+            val_upper = value.upper().replace("_", "").replace(" ", "")
+            if "PENDING" in val_upper:
+                return cls.PENDING
+            for member in cls:
+                if member.value.upper() == val_upper or member.name.upper() == val_upper:
+                    return member
+        return None
 
 
 
