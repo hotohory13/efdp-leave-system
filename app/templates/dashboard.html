@@ -59,15 +59,128 @@
   </div>
   <div class="col-md-4">
     <div class="stat-card blue">
-      <div class="small text-uppercase opacity-75">Faculty-wide pending</div>
-      <div class="display-6">{{ summary.faculty_metrics.get('pending_leave_requests', '—') }}</div>
+      <div class="small text-uppercase opacity-75">Unavailable / On Leave Today</div>
+      <div class="display-6">{{ absent_today | length }}</div>
     </div>
   </div>
   <div class="col-md-4">
     <div class="stat-card gold">
-      <div class="small text-uppercase opacity-75">Approved this cycle</div>
-      <div class="display-6">{{ summary.faculty_metrics.get('approved_leave_requests', '—') }}</div>
+      <div class="small text-uppercase opacity-75">Faculty-wide pending</div>
+      <div class="display-6">{{ summary.faculty_metrics.get('pending_leave_requests', '—') }}</div>
     </div>
+  </div>
+</div>
+
+{% if pending_approvals and pending_approvals.total_pending > 0 %}
+<!-- Manager / Admin Pending Approvals Quick Card -->
+<div class="card card-efdp border-primary mb-4">
+  <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+    <h5 class="mb-0"><i class="fa-solid fa-user-clock me-2"></i> Pending Approvals Awaiting Your Action</h5>
+    <a href="/approvals" class="btn btn-sm btn-light fw-bold text-primary">Open Approvals Queue ({{ pending_approvals.total_pending }}) →</a>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Key</th>
+            <th>Applicant</th>
+            <th>Type</th>
+            <th>Dates</th>
+            <th>Days</th>
+            <th>Reason / Details</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in pending_approvals.leave_queue %}
+          <tr>
+            <td><span class="badge bg-secondary">Leave</span> {{ r.request_key }}</td>
+            <td>{{ pending_approvals.employee_lookup.get(r.applicant_id, "—") }}</td>
+            <td>{{ pending_approvals.leave_type_lookup.get(r.leave_type_id, "—") }}</td>
+            <td>{{ r.start_date }} → {{ r.end_date }}</td>
+            <td>{{ r.working_days }} day(s)</td>
+            <td class="small text-muted">{{ r.reason }}</td>
+            <td>
+              <a href="/approvals" class="btn btn-sm btn-outline-primary">Review & Decide</a>
+            </td>
+          </tr>
+          {% endfor %}
+          {% for d in pending_approvals.duty_queue %}
+          <tr>
+            <td><span class="badge bg-info text-dark">Duty</span> {{ d.duty_key }}</td>
+            <td>{{ pending_approvals.employee_lookup.get(d.owner_id, "—") }}</td>
+            <td>Duty: {{ d.destination }}</td>
+            <td>{{ d.start_date }} → {{ d.end_date }}</td>
+            <td>{{ d.working_days }} day(s)</td>
+            <td class="small text-muted">{{ d.purpose }}</td>
+            <td>
+              <a href="/approvals" class="btn btn-sm btn-outline-primary">Review & Decide</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Unavailable / On Leave Today Roster Card -->
+<div class="card card-efdp mb-4">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h5 class="card-title mb-0">
+          <i class="fa-solid fa-user-slash text-danger me-2"></i>
+          Faculty & Staff Unavailable Today
+          <span class="badge bg-danger ms-2">{{ absent_today | length }} Person{% if absent_today|length != 1 %}s{% endif %}</span>
+        </h5>
+        <div class="text-muted small">Approved leave requests & official duties active on {{ today.strftime('%d %B %Y') }}</div>
+      </div>
+    </div>
+    {% if absent_today %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Department</th>
+            <th>Absence Type</th>
+            <th>Period</th>
+            <th>Reason / Details</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for person in absent_today %}
+          <tr>
+            <td>
+              <div class="fw-semibold">{{ person.employee_name }}</div>
+              <div class="text-muted small" dir="rtl">{{ person.employee_name_ar }}</div>
+            </td>
+            <td><span class="badge bg-secondary">{{ person.department_code }}</span></td>
+            <td>{{ person.type_name }}</td>
+            <td>{{ person.start_date }} → {{ person.end_date }}</td>
+            <td class="small text-muted">{{ person.reason }}</td>
+            <td>
+              {% if person.type_category == "Leave" %}
+                <span class="badge bg-warning text-dark"><i class="fa-solid fa-umbrella-beach me-1"></i> {{ person.status_label }}</span>
+              {% else %}
+                <span class="badge bg-info text-dark"><i class="fa-solid fa-briefcase me-1"></i> {{ person.status_label }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="p-3 text-center text-muted bg-light rounded">
+      <i class="fa-solid fa-circle-check text-success fs-4 d-block mb-1"></i>
+      All faculty and staff are present/available today ({{ today.strftime('%d %B %Y') }}).
+    </div>
+    {% endif %}
   </div>
 </div>
 
@@ -124,3 +237,4 @@
   </div>
 </div>
 {% endblock %}
+

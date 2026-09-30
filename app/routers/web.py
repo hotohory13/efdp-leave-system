@@ -101,11 +101,14 @@ async def dashboard_page(
 ):
     if not employee:
         return RedirectResponse("/login", status_code=303)
-    year = today_local().year
+    today = today_local()
+    year = today.year
     balances = await dashboard_service.get_my_balances(db, employee, year)
     summary = await dashboard_service.get_dashboard_summary(db, employee)
     recent_requests = await dashboard_service.get_recent_requests(db, employee)
     today_attendance = await attendance_service.get_today_attendance(db, employee)
+    absent_today = await dashboard_service.get_absent_employees_today(db, today)
+    pending_approvals = await dashboard_service.get_manager_pending_approvals(db, employee)
     return _render(
         request,
         "dashboard.html",
@@ -115,8 +118,11 @@ async def dashboard_page(
         summary=summary,
         recent_requests=recent_requests,
         today_attendance=today_attendance,
-        today=today_local(),
+        absent_today=absent_today,
+        pending_approvals=pending_approvals,
+        today=today,
     )
+
 
 
 # --- Leave requests --------------------------------------------------------
