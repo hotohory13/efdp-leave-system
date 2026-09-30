@@ -153,7 +153,7 @@ async def test_only_assigned_approver_may_decide(db_session, reference_data):
             stage_number=1,
             decision="Approved",
             note=None,
-            actor=reference_data["vice_dean"],  # not the stage-1 assignee
+            actor=reference_data["substitute"],  # TA with no approval privileges
             correlation_id=_uid(),
         )
 

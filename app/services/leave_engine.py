@@ -52,14 +52,24 @@ async def _resolve_assignee(db: AsyncSession, *, stage_name: str, department_id:
                 Employee.employment_status == "Active",
             )
         )
-    else:  # ViceDean — faculty-wide, no department scoping (Formula-Changes.md §A.5 parallel)
+        approver = result.scalars().first()
+        if approver is None:
+            # Fallback to Vice Dean / Admin if department has no HOD
+            vd_result = await db.execute(
+                select(Employee).where(
+                    Employee.role.in_([EmployeeRole.VICE_DEAN, EmployeeRole.ADMIN]),
+                    Employee.employment_status == "Active",
+                )
+            )
+            approver = vd_result.scalars().first()
+    else:  # ViceDean — faculty-wide
         result = await db.execute(
             select(Employee).where(
-                Employee.role == EmployeeRole.VICE_DEAN,
+                Employee.role.in_([EmployeeRole.VICE_DEAN, EmployeeRole.ADMIN]),
                 Employee.employment_status == "Active",
             )
         )
-    approver = result.scalars().first()
+        approver = result.scalars().first()
     if approver is None:
         return None
 
@@ -295,7 +305,7 @@ async def decide_step(
     )
     step = step_result.scalar_one()
 
-    if actor.role != EmployeeRole.ADMIN and step.assigned_to_id != actor.id:
+    if actor.role not in (EmployeeRole.ADMIN, EmployeeRole.VICE_DEAN) and step.assigned_to_id != actor.id:
         raise NotAuthorizedError("You are not the assigned approver for this stage.")
 
     if decision == "Rejected" and (not note or len(note.strip()) < settings.REJECTION_NOTE_MIN_LENGTH):

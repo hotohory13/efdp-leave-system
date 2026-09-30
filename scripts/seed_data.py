@@ -48,7 +48,7 @@ ROLE_MAP = {
     "Teaching Assistant": EmployeeRole.TEACHING_ASSISTANT,
     "Staff": EmployeeRole.STAFF,
     "Head of Department": EmployeeRole.HEAD_OF_DEPARTMENT,
-    "Vice Dean": EmployeeRole.VICE_DEAN,
+    "Vice Dean": EmployeeRole.ADMIN,
     "System Administrator": EmployeeRole.ADMIN,
 }
 
