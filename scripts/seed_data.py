@@ -299,7 +299,15 @@ async def seed_custom_accounts(db) -> None:
             "full_name_ar": "آسر محمد",
             "role": EmployeeRole.TEACHING_ASSISTANT,
             "password": "Passw0rd!",
-        }
+        },
+        {
+            "email": "bassem.sheta@acu.edu.eg",
+            "employee_code": "ADM-0002",
+            "full_name_en": "Dr. Bassem Sheta",
+            "full_name_ar": "د. باسم شتات",
+            "role": EmployeeRole.ADMIN,
+            "password": "Passw0rd!",
+        },
     ]
 
     for user_data in custom_users:
@@ -317,6 +325,11 @@ async def seed_custom_accounts(db) -> None:
                 employment_status=EmploymentStatus.ACTIVE,
             )
             db.add(employee)
+            await db.flush()
+        else:
+            employee.hashed_password = hash_password(user_data["password"])
+            employee.role = user_data["role"]
+            employee.employment_status = EmploymentStatus.ACTIVE
             await db.flush()
 
             annual_type_res = await db.execute(select(LeaveType).where(LeaveType.code == "اعتيادي"))
