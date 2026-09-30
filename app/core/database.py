@@ -76,11 +76,20 @@ async def init_models():
             except Exception:
                 pass
 
-        try:
-            from sqlalchemy import text
-            await conn.execute(text("UPDATE leave_requests SET status = 'Pending' WHERE status ILIKE '%pending%' AND status != 'Pending';"))
-        except Exception:
-            pass
+        normalizations = [
+            "UPDATE employees SET employment_status = 'Active' WHERE employment_status ILIKE 'active';",
+            "UPDATE employees SET employment_status = 'Inactive' WHERE employment_status ILIKE 'inactive';",
+            "UPDATE leave_requests SET status = 'Pending' WHERE status ILIKE '%pending%';",
+            "UPDATE leave_requests SET status = 'Approved' WHERE status ILIKE '%approved%';",
+            "UPDATE leave_requests SET status = 'Rejected' WHERE status ILIKE '%rejected%';",
+            "UPDATE leave_requests SET status = 'Cancelled' WHERE status ILIKE '%cancel%';",
+        ]
+        for stmt in normalizations:
+            try:
+                from sqlalchemy import text
+                await conn.execute(text(stmt))
+            except Exception:
+                pass
 
 
     async with AsyncSessionLocal() as db:

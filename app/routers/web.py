@@ -20,7 +20,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -159,7 +159,7 @@ async def leave_new_page(
     leave_types_result = await db.execute(select(LeaveType).where(LeaveType.is_active.is_(True)).order_by(LeaveType.code))
     colleagues_result = await db.execute(
         select(Employee)
-        .where(Employee.employment_status == EmploymentStatus.ACTIVE, Employee.id != employee.id)
+        .where(func.lower(Employee.employment_status) == "active", Employee.id != employee.id)
         .order_by(Employee.full_name_en)
     )
     return _render(
@@ -202,7 +202,7 @@ async def leave_new_submit(
     except Exception as exc:
         leave_types_result = await db.execute(select(LeaveType).where(LeaveType.is_active.is_(True)))
         colleagues_result = await db.execute(
-            select(Employee).where(Employee.employment_status == EmploymentStatus.ACTIVE, Employee.id != employee.id)
+            select(Employee).where(func.lower(Employee.employment_status) == "active", Employee.id != employee.id)
         )
         return _render(
             request,
