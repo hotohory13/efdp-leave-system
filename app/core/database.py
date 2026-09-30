@@ -41,6 +41,15 @@ async def init_models():
     """Dev/Serverless convenience: create tables directly and seed demo data if database is empty."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        try:
+            from sqlalchemy import text
+            res = await conn.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='employees';"))
+            cols = [r[0] for r in res.all()]
+            if cols and "must_change_password" not in cols:
+                await conn.execute(text("ALTER TABLE employees ADD COLUMN must_change_password BOOLEAN NOT NULL DEFAULT TRUE;"))
+        except Exception:
+            pass
+
 
     async with AsyncSessionLocal() as db:
         from app.models.org import Department
