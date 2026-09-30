@@ -56,11 +56,25 @@ async def init_models():
         except Exception:
             pass
 
-        try:
-            from sqlalchemy import text
-            await conn.execute(text("ALTER TABLE leave_requests ALTER COLUMN status TYPE VARCHAR(64) USING status::VARCHAR;"))
-        except Exception:
-            pass
+        # Convert all enum columns to VARCHAR(64) in PostgreSQL so string comparisons and custom StringEnumType work seamlessly
+        enum_column_alters = [
+            "ALTER TABLE leave_requests ALTER COLUMN status TYPE VARCHAR(64) USING status::VARCHAR;",
+            "ALTER TABLE leave_requests ALTER COLUMN applicant_role TYPE VARCHAR(64) USING applicant_role::VARCHAR;",
+            "ALTER TABLE employees ALTER COLUMN role TYPE VARCHAR(64) USING role::VARCHAR;",
+            "ALTER TABLE employees ALTER COLUMN employment_status TYPE VARCHAR(64) USING employment_status::VARCHAR;",
+            "ALTER TABLE approval_steps ALTER COLUMN status TYPE VARCHAR(64) USING status::VARCHAR;",
+            "ALTER TABLE approval_routes ALTER COLUMN role_required TYPE VARCHAR(64) USING role_required::VARCHAR;",
+            "ALTER TABLE official_duties ALTER COLUMN status TYPE VARCHAR(64) USING status::VARCHAR;",
+            "ALTER TABLE notification_log ALTER COLUMN channel TYPE VARCHAR(64) USING channel::VARCHAR;",
+            "ALTER TABLE notification_log ALTER COLUMN status TYPE VARCHAR(64) USING status::VARCHAR;",
+            "ALTER TABLE attendance ALTER COLUMN status TYPE VARCHAR(64) USING status::VARCHAR;",
+        ]
+        for stmt in enum_column_alters:
+            try:
+                from sqlalchemy import text
+                await conn.execute(text(stmt))
+            except Exception:
+                pass
 
         try:
             from sqlalchemy import text

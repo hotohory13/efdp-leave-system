@@ -228,13 +228,14 @@
       <div class="card-body">
         <h5 class="card-title"><i class="fa-solid fa-clock-rotate-left text-primary"></i> Recent Requests</h5>
         {% if recent_requests %}
-        <table class="table table-sm mb-0">
-          <thead><tr><th>Key</th><th>Dates</th><th>Status</th></tr></thead>
+        <table class="table table-sm mb-0 align-middle">
+          <thead><tr><th>Key</th><th>Dates</th><th>Working Days</th><th>Status</th></tr></thead>
           <tbody>
           {% for r in recent_requests %}
             <tr>
-              <td>{{ r.request_key }}</td>
+              <td class="fw-semibold">{{ r.request_key }}</td>
               <td>{{ r.start_date }} → {{ r.end_date }}</td>
+              <td><span class="badge bg-light text-dark border">{{ r.working_days }} day{% if r.working_days != 1 %}s{% endif %}</span></td>
               <td><span class="badge badge-status-{{ r.status.value }}">{{ r.status.value }}</span></td>
             </tr>
           {% endfor %}
