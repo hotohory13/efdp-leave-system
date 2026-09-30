@@ -94,7 +94,10 @@ class LeaveRequest(Base):
 
     reason: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[LeaveRequestStatus] = mapped_column(
-        Enum(LeaveRequestStatus), default=LeaveRequestStatus.PENDING_STAGE_1, nullable=False, index=True
+        Enum(LeaveRequestStatus, native_enum=False, values_callable=lambda obj: [e.value for e in obj]),
+        default=LeaveRequestStatus.PENDING,
+        nullable=False,
+        index=True,
     )
     current_stage: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     decision_note: Mapped[str | None] = mapped_column(Text, nullable=True)

@@ -52,6 +52,18 @@ async def init_models():
 
         try:
             from sqlalchemy import text
+            await conn.execute(text("ALTER TYPE leaverequeststatus ADD VALUE IF NOT EXISTS 'Pending';"))
+        except Exception:
+            pass
+
+        try:
+            from sqlalchemy import text
+            await conn.execute(text("ALTER TABLE leave_requests ALTER COLUMN status TYPE VARCHAR(64) USING status::VARCHAR;"))
+        except Exception:
+            pass
+
+        try:
+            from sqlalchemy import text
             await conn.execute(text("UPDATE leave_requests SET status = 'Pending' WHERE status IN ('PendingStage1', 'PendingStage2', 'Pending Stage 1', 'Pending Stage 2');"))
         except Exception:
             pass
