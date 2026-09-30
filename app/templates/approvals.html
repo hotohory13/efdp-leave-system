@@ -3,6 +3,13 @@
 {% block content %}
 <h4 class="mb-3">Approval Queue</h4>
 
+{% if error %}
+<div class="alert alert-danger mb-3 alert-dismissible fade show" role="alert">
+  <i class="fa-solid fa-triangle-exclamation me-2"></i> {{ error }}
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}
+
 <ul class="nav nav-tabs mb-3" id="approvalTabs" role="tablist">
   <li class="nav-item" role="presentation">
     <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#leaveTab" type="button">
@@ -36,11 +43,10 @@
               <td class="small">{{ r.reason }}</td>
               <td>{{ r.current_stage }}</td>
               <td>
-                <form method="post" action="/approvals/leave/{{ r.id }}/decide" class="d-flex gap-1">
+                <form method="post" action="/approvals/leave/{{ r.id }}/decide" class="d-flex gap-1" onsubmit="return validateRejection(this);">
                   <input type="text" name="note" class="form-control form-control-sm" placeholder="Note (required to reject, min {{ rejection_note_min_length }} chars)">
                   <button class="btn btn-sm btn-success" name="decision" value="Approved" type="submit">Approve</button>
-                  <button class="btn btn-sm btn-outline-danger" name="decision" value="Rejected" type="submit"
-                          onclick="return confirm('Reject this request?');">Reject</button>
+                  <button class="btn btn-sm btn-outline-danger" name="decision" value="Rejected" type="submit">Reject</button>
                 </form>
               </td>
             </tr>
@@ -71,11 +77,10 @@
               <td>{{ "Yes" if d.is_retroactive else "No" }}</td>
               <td class="small">{{ d.purpose }}{% if d.is_retroactive %}<br><span class="text-muted">Justification: {{ d.retro_justification }}</span>{% endif %}</td>
               <td>
-                <form method="post" action="/approvals/duty/{{ d.id }}/decide" class="d-flex gap-1">
-                  <input type="text" name="note" class="form-control form-control-sm" placeholder="Note (required to reject)">
+                <form method="post" action="/approvals/duty/{{ d.id }}/decide" class="d-flex gap-1" onsubmit="return validateRejection(this);">
+                  <input type="text" name="note" class="form-control form-control-sm" placeholder="Note (required to reject, min {{ rejection_note_min_length }} chars)">
                   <button class="btn btn-sm btn-success" name="decision" value="Approved" type="submit">Approve</button>
-                  <button class="btn btn-sm btn-outline-danger" name="decision" value="Rejected" type="submit"
-                          onclick="return confirm('Reject this duty?');">Reject</button>
+                  <button class="btn btn-sm btn-outline-danger" name="decision" value="Rejected" type="submit">Reject</button>
                 </form>
               </td>
             </tr>
@@ -88,4 +93,23 @@
     </div>
   </div>
 </div>
+
+<script>
+function validateRejection(form) {
+  const btn = document.activeElement;
+  if (btn && btn.value === 'Rejected') {
+    const noteInput = form.querySelector('input[name="note"]');
+    const noteVal = noteInput ? noteInput.value.trim() : '';
+    const minLen = parseInt('{{ rejection_note_min_length }}') || 10;
+    if (noteVal.length < minLen) {
+      alert('A rejection reason of at least ' + minLen + ' characters is required.');
+      if (noteInput) noteInput.focus();
+      return false;
+    }
+    return confirm('Are you sure you want to reject this request?');
+  }
+  return true;
+}
+</script>
 {% endblock %}
+

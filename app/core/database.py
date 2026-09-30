@@ -9,9 +9,15 @@ db_url = settings.DATABASE_URL
 if (os.environ.get("VERCEL") or os.environ.get("VERCEL_ENV")) and "sqlite" in db_url and "./efdp.db" in db_url:
     db_url = "sqlite+aiosqlite:////tmp/efdp.db"
 
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql+psycopg://", 1)
+elif db_url.startswith("postgresql://") and not db_url.startswith("postgresql+"):
+    db_url = db_url.replace("postgresql://", "postgresql+psycopg://", 1)
+
 connect_args = {}
 if db_url.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
+
 
 engine = create_async_engine(
     db_url,

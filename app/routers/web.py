@@ -293,6 +293,7 @@ async def duties_mine_page(
 @router.get("/approvals")
 async def approvals_page(
     request: Request,
+    error: str | None = None,
     db: AsyncSession = Depends(get_db),
     employee: Employee | None = Depends(get_current_employee_optional),
 ):
@@ -335,6 +336,7 @@ async def approvals_page(
         request,
         "approvals.html",
         user=employee,
+        error=error,
         leave_queue=leave_queue,
         duty_queue=duty_queue,
         leave_type_lookup=leave_type_lookup,
@@ -345,6 +347,7 @@ async def approvals_page(
 
 @router.post("/approvals/leave/{request_id}/decide")
 async def approvals_leave_decide(
+    request: Request,
     request_id: int,
     decision: str = Form(...),
     note: str = Form(""),
@@ -365,13 +368,16 @@ async def approvals_leave_decide(
                 actor=employee,
                 correlation_id=str(uuid.uuid4()),
             )
-        except Exception:
-            pass
+            await db.commit()
+        except Exception as e:
+            await db.rollback()
+            return await approvals_page(request, error=str(e), db=db, employee=employee)
     return RedirectResponse("/approvals", status_code=303)
 
 
 @router.post("/approvals/duty/{duty_id}/decide")
 async def approvals_duty_decide(
+    request: Request,
     duty_id: int,
     decision: str = Form(...),
     note: str = Form(""),
@@ -386,9 +392,12 @@ async def approvals_duty_decide(
             await duty_engine.decide_duty(
                 db, duty=duty, decision=decision, note=note or None, actor=employee, correlation_id=str(uuid.uuid4())
             )
-        except Exception:
-            pass
+            await db.commit()
+        except Exception as e:
+            await db.rollback()
+            return await approvals_page(request, error=str(e), db=db, employee=employee)
     return RedirectResponse("/approvals", status_code=303)
+
 
 
 # --- Admin panel -----------------------------------------------------------
