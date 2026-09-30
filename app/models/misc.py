@@ -4,7 +4,7 @@ from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Integer, Strin
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-from app.models.enums import NotificationChannel, NotificationStatus, OfficialDutyStatus
+from app.models.enums import NotificationChannel, NotificationStatus, OfficialDutyStatus, StringEnumType
 
 
 class OfficialDuty(Base):
@@ -33,7 +33,7 @@ class OfficialDuty(Base):
     retro_justification: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     status: Mapped[OfficialDutyStatus] = mapped_column(
-        Enum(OfficialDutyStatus), default=OfficialDutyStatus.PENDING, nullable=False, index=True
+        StringEnumType(OfficialDutyStatus), default=OfficialDutyStatus.PENDING, nullable=False, index=True
     )
     approved_by_id: Mapped[int | None] = mapped_column(ForeignKey("employees.id"), nullable=True)
     decision_note: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -100,9 +100,9 @@ class NotificationLog(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     recipient_email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
-    channel: Mapped[NotificationChannel] = mapped_column(Enum(NotificationChannel), nullable=False)
+    channel: Mapped[NotificationChannel] = mapped_column(StringEnumType(NotificationChannel), nullable=False)
     template_key: Mapped[str] = mapped_column(String(100), nullable=False)
     subject: Mapped[str] = mapped_column(String(300), nullable=False)
     body: Mapped[str] = mapped_column(Text, nullable=False)
-    status: Mapped[NotificationStatus] = mapped_column(Enum(NotificationStatus), nullable=False)
+    status: Mapped[NotificationStatus] = mapped_column(StringEnumType(NotificationStatus), nullable=False)
     occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

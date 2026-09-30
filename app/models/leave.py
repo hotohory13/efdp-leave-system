@@ -9,13 +9,14 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    TypeDecorator,
     UniqueConstraint,
     func,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-from app.models.enums import ApprovalStepStatus, EmployeeRole, LeaveRequestStatus
+from app.models.enums import ApprovalStepStatus, EmployeeRole, LeaveRequestStatus, StringEnumType
 
 
 class LeaveType(Base):
@@ -79,7 +80,7 @@ class LeaveRequest(Base):
     # Denormalised, load-bearing snapshot (Part 3 §5.1): written by the
     # service from the Directory at submission time, never accepted from the
     # client — it is what makes the substitute rule (BR-03) enforceable.
-    applicant_role: Mapped[EmployeeRole] = mapped_column(Enum(EmployeeRole), nullable=False)
+    applicant_role: Mapped[EmployeeRole] = mapped_column(StringEnumType(EmployeeRole), nullable=False)
     department_id: Mapped[int] = mapped_column(ForeignKey("departments.id"), nullable=False)
 
     leave_type_id: Mapped[int] = mapped_column(ForeignKey("leave_types.id"), nullable=False)
@@ -94,7 +95,7 @@ class LeaveRequest(Base):
 
     reason: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[LeaveRequestStatus] = mapped_column(
-        Enum(LeaveRequestStatus, native_enum=False, values_callable=lambda obj: [e.value for e in obj]),
+        StringEnumType(LeaveRequestStatus),
         default=LeaveRequestStatus.PENDING,
         nullable=False,
         index=True,
@@ -131,7 +132,7 @@ class ApprovalStep(Base):
     delegated_from_id: Mapped[int | None] = mapped_column(ForeignKey("employees.id"), nullable=True)
 
     status: Mapped[ApprovalStepStatus] = mapped_column(
-        Enum(ApprovalStepStatus), default=ApprovalStepStatus.PENDING, nullable=False, index=True
+        StringEnumType(ApprovalStepStatus), default=ApprovalStepStatus.PENDING, nullable=False, index=True
     )
     sla_due_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     escalation_due_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -154,7 +155,7 @@ class ApprovalRoute(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     stage_number: Mapped[int] = mapped_column(Integer, nullable=False, unique=True)
     stage_name: Mapped[str] = mapped_column(String(32), nullable=False)
-    role_required: Mapped[EmployeeRole] = mapped_column(Enum(EmployeeRole), nullable=False)
+    role_required: Mapped[EmployeeRole] = mapped_column(StringEnumType(EmployeeRole), nullable=False)
     sla_hours: Mapped[int] = mapped_column(Integer, nullable=False)
     escalation_hours: Mapped[int] = mapped_column(Integer, nullable=False)
 

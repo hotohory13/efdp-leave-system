@@ -4,7 +4,7 @@ from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Integer, Strin
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-from app.models.enums import EmployeeRole, EmploymentStatus
+from app.models.enums import EmployeeRole, EmploymentStatus, StringEnumType
 
 
 class Employee(Base):
@@ -27,9 +27,9 @@ class Employee(Base):
     department_id: Mapped[int] = mapped_column(ForeignKey("departments.id"), nullable=False)
     program_id: Mapped[int | None] = mapped_column(ForeignKey("programs.id"), nullable=True)
     academic_rank: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    role: Mapped[EmployeeRole] = mapped_column(Enum(EmployeeRole), nullable=False)
+    role: Mapped[EmployeeRole] = mapped_column(StringEnumType(EmployeeRole), nullable=False)
     employment_status: Mapped[EmploymentStatus] = mapped_column(
-        Enum(EmploymentStatus), default=EmploymentStatus.ACTIVE, nullable=False
+        StringEnumType(EmploymentStatus), default=EmploymentStatus.ACTIVE, nullable=False
     )
     supervisor_id: Mapped[int | None] = mapped_column(ForeignKey("employees.id"), nullable=True)
 

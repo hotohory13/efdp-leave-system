@@ -4,7 +4,7 @@ from sqlalchemy import Date, DateTime, Enum, Float, ForeignKey, Integer, Text, U
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-from app.models.enums import AttendanceStatus
+from app.models.enums import AttendanceStatus, StringEnumType
 
 
 class Attendance(Base):
@@ -25,7 +25,7 @@ class Attendance(Base):
     total_hours: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     status: Mapped[AttendanceStatus] = mapped_column(
-        Enum(AttendanceStatus), default=AttendanceStatus.INCOMPLETE, nullable=False, index=True
+        StringEnumType(AttendanceStatus), default=AttendanceStatus.INCOMPLETE, nullable=False, index=True
     )
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
