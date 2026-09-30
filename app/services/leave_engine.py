@@ -138,6 +138,7 @@ async def submit_leave_request(
         select(LeaveRequest).where(
             LeaveRequest.applicant_id == applicant.id,
             LeaveRequest.status.in_([
+                LeaveRequestStatus.PENDING,
                 LeaveRequestStatus.PENDING_STAGE_1,
                 LeaveRequestStatus.PENDING_STAGE_2,
                 LeaveRequestStatus.APPROVED,
@@ -159,6 +160,7 @@ async def submit_leave_request(
             select(LeaveRequest).where(
                 LeaveRequest.applicant_id == substitute_id,
                 LeaveRequest.status.in_([
+                    LeaveRequestStatus.PENDING,
                     LeaveRequestStatus.PENDING_STAGE_1,
                     LeaveRequestStatus.PENDING_STAGE_2,
                     LeaveRequestStatus.APPROVED,

@@ -230,12 +230,16 @@ async def build_admin_report_pdf(db: AsyncSession, *, generated_by: Employee, ye
     story.append(kpi_table)
     story.append(Spacer(1, 10))
 
+    pending_total = (
+        request_status_counts.get(LeaveRequestStatus.PENDING, 0)
+        + request_status_counts.get(LeaveRequestStatus.PENDING_STAGE_1, 0)
+        + request_status_counts.get(LeaveRequestStatus.PENDING_STAGE_2, 0)
+    )
     status_rows = [
-        ["Leave Requests — Pending (Stage 1)", str(request_status_counts[LeaveRequestStatus.PENDING_STAGE_1])],
-        ["Leave Requests — Pending (Stage 2)", str(request_status_counts[LeaveRequestStatus.PENDING_STAGE_2])],
-        ["Leave Requests — Approved", str(request_status_counts[LeaveRequestStatus.APPROVED])],
-        ["Leave Requests — Rejected", str(request_status_counts[LeaveRequestStatus.REJECTED])],
-        ["Leave Requests — Cancelled", str(request_status_counts[LeaveRequestStatus.CANCELLED])],
+        ["Leave Requests — Pending", str(pending_total)],
+        ["Leave Requests — Approved", str(request_status_counts.get(LeaveRequestStatus.APPROVED, 0))],
+        ["Leave Requests — Rejected", str(request_status_counts.get(LeaveRequestStatus.REJECTED, 0))],
+        ["Leave Requests — Cancelled", str(request_status_counts.get(LeaveRequestStatus.CANCELLED, 0))],
         ["Total Leave Days Used (this year)", str(total_leave_days_used)],
         ["Official Duties — Pending", str(duty_status_counts[OfficialDutyStatus.PENDING])],
         ["Official Duties — Approved", str(duty_status_counts[OfficialDutyStatus.APPROVED])],

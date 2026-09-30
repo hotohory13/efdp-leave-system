@@ -50,6 +50,12 @@ async def init_models():
         except Exception:
             pass
 
+        try:
+            from sqlalchemy import text
+            await conn.execute(text("UPDATE leave_requests SET status = 'Pending' WHERE status IN ('PendingStage1', 'PendingStage2', 'Pending Stage 1', 'Pending Stage 2');"))
+        except Exception:
+            pass
+
 
     async with AsyncSessionLocal() as db:
         from app.models.org import Department
