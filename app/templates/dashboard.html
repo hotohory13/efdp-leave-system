@@ -51,6 +51,7 @@
 </div>
 
 <div class="row g-3 mb-4">
+  {% if user.role.value in ["Admin", "HeadOfDepartment", "ViceDean"] %}
   <div class="col-md-4">
     <div class="stat-card navy">
       <div class="small text-uppercase opacity-75">My pending requests</div>
@@ -69,8 +70,17 @@
       <div class="display-6">{{ summary.faculty_metrics.get('pending_leave_requests', '—') }}</div>
     </div>
   </div>
+  {% else %}
+  <div class="col-md-12">
+    <div class="stat-card navy">
+      <div class="small text-uppercase opacity-75">My pending requests</div>
+      <div class="display-6">{{ summary.my_pending_requests }}</div>
+    </div>
+  </div>
+  {% endif %}
 </div>
 
+{% if user.role.value in ["Admin", "HeadOfDepartment", "ViceDean"] %}
 {% if pending_approvals and pending_approvals.total_pending > 0 %}
 <!-- Manager / Admin Pending Approvals Quick Card -->
 <div class="card card-efdp border-primary mb-4">
@@ -183,6 +193,8 @@
     {% endif %}
   </div>
 </div>
+{% endif %}
+
 
 <div class="row g-3">
   <div class="col-md-6">
