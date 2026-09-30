@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite+aiosqlite:///./efdp.db"
 
     # --- Auth --------------------------------------------------------------
-    SECRET_KEY: str = "insecure-dev-key-change-me"
+    SECRET_KEY: str = "efdp-faculty-engineering-acu-secure-secret-key-2026"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 480
 
