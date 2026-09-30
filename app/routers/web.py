@@ -52,7 +52,7 @@ def _local_time_filter(dt, fmt: str = "%I:%M %p") -> str:
 
 templates.env.filters["local_time"] = _local_time_filter
 
-MANAGER_ROLES = (EmployeeRole.HEAD_OF_DEPARTMENT, EmployeeRole.VICE_DEAN, EmployeeRole.ADMIN)
+MANAGER_ROLES = (EmployeeRole.ADMIN,)
 
 
 def _render(request: Request, template: str, **context):
@@ -330,28 +330,13 @@ async def approvals_page(
     if employee.role not in MANAGER_ROLES:
         return RedirectResponse("/", status_code=303)
 
-    # Leave-request queue — mirrors app/routers/leave_requests.py::approval_queue
-    if employee.role == EmployeeRole.ADMIN:
-        leave_query = select(LeaveRequest).where(
-            LeaveRequest.status.in_([LeaveRequestStatus.PENDING_STAGE_1, LeaveRequestStatus.PENDING_STAGE_2])
-        )
-    else:
-        stage_number = 1 if employee.role == EmployeeRole.HEAD_OF_DEPARTMENT else 2
-        leave_query = (
-            select(LeaveRequest)
-            .join(ApprovalStep, ApprovalStep.request_id == LeaveRequest.id)
-            .where(
-                ApprovalStep.stage_number == LeaveRequest.current_stage,
-                LeaveRequest.current_stage == stage_number,
-                ApprovalStep.assigned_to_id == employee.id,
-            )
-        )
+    leave_query = select(LeaveRequest).where(
+        LeaveRequest.status.in_([LeaveRequestStatus.PENDING, "Pending Stage 1", "Pending Stage 2"])
+    )
     leave_result = await db.execute(leave_query.order_by(LeaveRequest.submitted_at))
     leave_queue = leave_result.scalars().all()
 
     duty_query = select(OfficialDuty).where(OfficialDuty.status == OfficialDutyStatus.PENDING)
-    if employee.role == EmployeeRole.HEAD_OF_DEPARTMENT:
-        duty_query = duty_query.where(OfficialDuty.department_id == employee.department_id)
     duty_result = await db.execute(duty_query.order_by(OfficialDuty.submitted_at))
     duty_queue = duty_result.scalars().all()
 

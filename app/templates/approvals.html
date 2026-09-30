@@ -29,7 +29,7 @@
       <div class="card-body">
         <table class="table table-hover align-middle mb-0">
           <thead>
-            <tr><th>Key</th><th>Applicant</th><th>Type</th><th>Dates</th><th>Days</th><th>Substitute</th><th>Reason</th><th>Stage</th><th style="width:320px">Decision</th></tr>
+            <tr><th>Key</th><th>Applicant</th><th>Type</th><th>Dates</th><th>Days</th><th>Substitute</th><th>Reason</th><th style="width:320px">Decision</th></tr>
           </thead>
           <tbody>
           {% for r in leave_queue %}
@@ -41,7 +41,6 @@
               <td>{{ r.working_days }}</td>
               <td>{{ employee_lookup.get(r.substitute_id, "—") }}</td>
               <td class="small">{{ r.reason }}</td>
-              <td>{{ r.current_stage }}</td>
               <td>
                 <form method="post" action="/approvals/leave/{{ r.id }}/decide" class="d-flex gap-1" onsubmit="return validateRejection(this);">
                   <input type="text" name="note" class="form-control form-control-sm" placeholder="Note (required to reject, min {{ rejection_note_min_length }} chars)">
@@ -51,7 +50,7 @@
               </td>
             </tr>
           {% else %}
-            <tr><td colspan="9" class="text-center text-muted py-4">No leave requests are awaiting your decision.</td></tr>
+            <tr><td colspan="8" class="text-center text-muted py-4">No leave requests are awaiting your decision.</td></tr>
           {% endfor %}
           </tbody>
         </table>

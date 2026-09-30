@@ -19,7 +19,7 @@
           <td><span class="badge badge-status-{{ r.status.value }}">{{ r.status.value }}</span></td>
           <td class="small text-muted">{{ r.decision_note or "" }}</td>
           <td>
-            {% if r.status.value in ["PendingStage1", "PendingStage2"] %}
+            {% if "Pending" in r.status.value or r.status.value in ["Pending", "PendingStage1", "PendingStage2"] %}
             <form method="post" action="/leave/{{ r.id }}/cancel" onsubmit="return confirm('Cancel this request?');">
               <button class="btn btn-sm btn-outline-danger">Cancel</button>
             </form>

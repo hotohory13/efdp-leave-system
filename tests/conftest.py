@@ -73,7 +73,11 @@ async def reference_data(db_session):
         employee_code="EEC-0144", full_name_en="Substitute TA", full_name_ar="بديل", email="sub@acu.edu.eg",
         hashed_password=hash_password("x"), department_id=department.id, role=EmployeeRole.TEACHING_ASSISTANT,
     )
-    db_session.add_all([hod, vice_dean, ta, substitute])
+    admin = Employee(
+        employee_code="ADM-0001", full_name_en="Admin Bassem", full_name_ar="د. باسم شتات", email="bassem.sheta@acu.edu.eg",
+        hashed_password=hash_password("x"), department_id=department.id, role=EmployeeRole.ADMIN,
+    )
+    db_session.add_all([hod, vice_dean, ta, substitute, admin])
     await db_session.commit()
 
     return {
@@ -84,6 +88,7 @@ async def reference_data(db_session):
         "vice_dean": vice_dean,
         "ta": ta,
         "substitute": substitute,
+        "admin": admin,
     }
 
 

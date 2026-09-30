@@ -28,7 +28,7 @@
         <li class="nav-item"><a class="nav-link" href="/duties/new">Official Duty</a></li>
         <li class="nav-item"><a class="nav-link" href="/duties/mine">My Duties</a></li>
         <li class="nav-item"><a class="nav-link" href="/attendance/mine">My Attendance</a></li>
-        {% if user.role.value in ["HeadOfDepartment", "ViceDean", "Admin"] %}
+        {% if user.role.value == "Admin" %}
         <li class="nav-item"><a class="nav-link" href="/approvals">Approval Queue</a></li>
         {% endif %}
         {% if user.role.value == "Admin" %}

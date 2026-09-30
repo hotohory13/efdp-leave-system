@@ -40,31 +40,19 @@ async def test_full_approval_flow_commits_balance(db_session, reference_data):
         submission_id=_uid(),
         correlation_id=_uid(),
     )
-    assert request.status == LeaveRequestStatus.PENDING_STAGE_1
+    assert request.status == LeaveRequestStatus.PENDING
     assert request.working_days == 2
 
-    stage1 = await leave_engine.decide_step(
+    approved = await leave_engine.decide_step(
         db_session,
         leave_request=request,
         stage_number=1,
         decision="Approved",
-        note=None,
-        actor=reference_data["hod"],
+        note="Approved",
+        actor=reference_data["admin"],
         correlation_id=_uid(),
     )
-    assert stage1.status == LeaveRequestStatus.PENDING_STAGE_2
-    assert stage1.current_stage == 2
-
-    stage2 = await leave_engine.decide_step(
-        db_session,
-        leave_request=stage1,
-        stage_number=2,
-        decision="Approved",
-        note="Enjoy",
-        actor=reference_data["vice_dean"],
-        correlation_id=_uid(),
-    )
-    assert stage2.status == LeaveRequestStatus.APPROVED
+    assert approved.status == LeaveRequestStatus.APPROVED
 
     from app.services import balance_engine
 

@@ -42,7 +42,7 @@ async def get_dashboard_summary(db: AsyncSession, employee: Employee) -> dict:
     my_pending = await db.execute(
         select(LeaveRequest).where(
             LeaveRequest.applicant_id == employee.id,
-            LeaveRequest.status.in_([LeaveRequestStatus.PENDING_STAGE_1, LeaveRequestStatus.PENDING_STAGE_2]),
+            LeaveRequest.status.in_([LeaveRequestStatus.PENDING, "Pending Stage 1", "Pending Stage 2"]),
         )
     )
     return {
@@ -127,30 +127,16 @@ async def get_absent_employees_today(db: AsyncSession, target_date: date) -> lis
 
 async def get_manager_pending_approvals(db: AsyncSession, employee: Employee) -> dict:
     """Returns pending leave requests & official duties for manager/admin approval."""
-    if employee.role not in (EmployeeRole.ADMIN, EmployeeRole.HEAD_OF_DEPARTMENT, EmployeeRole.VICE_DEAN):
+    if employee.role != EmployeeRole.ADMIN:
         return {"leave_queue": [], "duty_queue": [], "leave_type_lookup": {}, "employee_lookup": {}, "total_pending": 0}
 
-    if employee.role == EmployeeRole.ADMIN:
-        leave_query = select(LeaveRequest).where(
-            LeaveRequest.status.in_([LeaveRequestStatus.PENDING_STAGE_1, LeaveRequestStatus.PENDING_STAGE_2])
-        )
-    else:
-        stage_number = 1 if employee.role == EmployeeRole.HEAD_OF_DEPARTMENT else 2
-        leave_query = (
-            select(LeaveRequest)
-            .join(ApprovalStep, ApprovalStep.request_id == LeaveRequest.id)
-            .where(
-                ApprovalStep.stage_number == LeaveRequest.current_stage,
-                LeaveRequest.current_stage == stage_number,
-                ApprovalStep.assigned_to_id == employee.id,
-            )
-        )
+    leave_query = select(LeaveRequest).where(
+        LeaveRequest.status.in_([LeaveRequestStatus.PENDING, "Pending Stage 1", "Pending Stage 2"])
+    )
     leave_result = await db.execute(leave_query.order_by(LeaveRequest.submitted_at.desc()))
     leave_queue = leave_result.scalars().all()
 
     duty_query = select(OfficialDuty).where(OfficialDuty.status == OfficialDutyStatus.PENDING)
-    if employee.role == EmployeeRole.HEAD_OF_DEPARTMENT:
-        duty_query = duty_query.where(OfficialDuty.department_id == employee.department_id)
     duty_result = await db.execute(duty_query.order_by(OfficialDuty.submitted_at.desc()))
     duty_queue = duty_result.scalars().all()
 

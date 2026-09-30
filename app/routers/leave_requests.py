@@ -58,25 +58,11 @@ async def my_requests(db: AsyncSession = Depends(get_db), employee: Employee = D
 async def approval_queue(db: AsyncSession = Depends(get_db), employee: Employee = Depends(get_current_employee)):
     """Requests currently awaiting a decision from the caller — resolved by
     which ApprovalStep is assigned to them at the request's current stage."""
-    if employee.role not in (EmployeeRole.HEAD_OF_DEPARTMENT, EmployeeRole.VICE_DEAN, EmployeeRole.ADMIN):
+    if employee.role != EmployeeRole.ADMIN:
         return []
-    stage_number = 1 if employee.role == EmployeeRole.HEAD_OF_DEPARTMENT else 2
-    query = (
-        select(LeaveRequest)
-        .join(ApprovalStep, ApprovalStep.request_id == LeaveRequest.id)
-        .where(
-            ApprovalStep.stage_number == LeaveRequest.current_stage,
-            LeaveRequest.current_stage == stage_number,
-        )
+    query = select(LeaveRequest).where(
+        LeaveRequest.status.in_([LeaveRequestStatus.PENDING, "Pending Stage 1", "Pending Stage 2"])
     )
-    if employee.role == EmployeeRole.ADMIN:
-        query = select(LeaveRequest).where(
-            LeaveRequest.status.in_([LeaveRequestStatus.PENDING_STAGE_1, LeaveRequestStatus.PENDING_STAGE_2])
-        )
-    elif employee.role == EmployeeRole.HEAD_OF_DEPARTMENT:
-        query = query.where(ApprovalStep.assigned_to_id == employee.id)
-    else:  # Vice Dean — faculty-wide, no department scoping
-        query = query.where(ApprovalStep.assigned_to_id == employee.id)
     result = await db.execute(query.order_by(LeaveRequest.submitted_at))
     return result.scalars().all()
 
@@ -88,7 +74,7 @@ async def get_request(
     request = await db.get(LeaveRequest, request_id)
     if not request:
         raise HTTPException(status_code=404, detail="Request not found")
-    is_manager = employee.role in (EmployeeRole.HEAD_OF_DEPARTMENT, EmployeeRole.VICE_DEAN, EmployeeRole.ADMIN)
+    is_manager = employee.role == EmployeeRole.ADMIN
     if request.applicant_id != employee.id and not is_manager:
         raise HTTPException(status_code=403, detail="Not authorized to view this request")
     return request

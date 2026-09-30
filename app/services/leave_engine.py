@@ -202,10 +202,11 @@ async def submit_leave_request(
         working_days=working_days,
         substitute_id=substitute_id,
         reason=reason.strip(),
-        status=LeaveRequestStatus.PENDING_STAGE_1,
+        status=LeaveRequestStatus.PENDING,
         current_stage=1,
         correlation_id=correlation_id,
     )
+
     db.add(leave_request)
     await db.flush()
 
@@ -291,22 +292,19 @@ async def decide_step(
     if decision not in ("Approved", "Rejected"):
         raise LeaveValidationError("Decision must be 'Approved' or 'Rejected'.")
 
-    if leave_request.current_stage != stage_number:
-        raise LeaveValidationError(
-            f"This request is currently awaiting stage {leave_request.current_stage}, not stage {stage_number}."
-        )
-    if leave_request.status not in (LeaveRequestStatus.PENDING_STAGE_1, LeaveRequestStatus.PENDING_STAGE_2):
+    if leave_request.status in (LeaveRequestStatus.APPROVED, LeaveRequestStatus.REJECTED, LeaveRequestStatus.CANCELLED):
         raise LeaveValidationError(f"This request is already {leave_request.status.value} and cannot be decided.")
 
     step_result = await db.execute(
         select(ApprovalStep).where(
-            ApprovalStep.request_id == leave_request.id, ApprovalStep.stage_number == stage_number
+            ApprovalStep.request_id == leave_request.id
         )
     )
-    step = step_result.scalar_one()
+    steps = step_result.scalars().all()
+    step = steps[0] if steps else None
 
-    if actor.role not in (EmployeeRole.ADMIN, EmployeeRole.VICE_DEAN) and step.assigned_to_id != actor.id:
-        raise NotAuthorizedError("You are not the assigned approver for this stage.")
+    if actor.role not in (EmployeeRole.ADMIN, EmployeeRole.VICE_DEAN, EmployeeRole.HEAD_OF_DEPARTMENT):
+        raise NotAuthorizedError("You are not authorized to decide leave requests.")
 
     if decision == "Rejected" and (not note or len(note.strip()) < settings.REJECTION_NOTE_MIN_LENGTH):
         raise LeaveValidationError(
@@ -314,9 +312,10 @@ async def decide_step(
         )
 
     now = datetime.now(timezone.utc)
-    step.status = ApprovalStepStatus.APPROVED if decision == "Approved" else ApprovalStepStatus.REJECTED
-    step.decision_at = now
-    step.decision_note = note.strip() if note else None
+    if step:
+        step.status = ApprovalStepStatus.APPROVED if decision == "Approved" else ApprovalStepStatus.REJECTED
+        step.decision_at = now
+        step.decision_note = note.strip() if note else None
 
     leave_type = await db.get(LeaveType, leave_request.leave_type_id)
     applicant = await db.get(Employee, leave_request.applicant_id)
@@ -340,12 +339,7 @@ async def decide_step(
             balance_engine.release_pending(secondary_balance, leave_request.working_days)
         recipient = applicant
         message = f"Your leave request {leave_request.request_key} was rejected. Reason: {note}"
-    elif stage_number == 1:
-        leave_request.status = LeaveRequestStatus.PENDING_STAGE_2
-        leave_request.current_stage = 2
-        recipient = None
-        message = None
-    else:  # stage 2 approved -> final approval, commit the reservation (ADR-07)
+    else:  # Approved -> final approval (single step)
         leave_request.status = LeaveRequestStatus.APPROVED
         leave_request.decision_note = note.strip() if note else leave_request.decision_note
         balance_engine.commit_pending_to_used(balance, leave_request.working_days)
@@ -353,6 +347,9 @@ async def decide_step(
             balance_engine.commit_pending_to_used(secondary_balance, leave_request.working_days)
         recipient = applicant
         message = f"Your leave request {leave_request.request_key} was approved."
+
+
+
 
     await audit.record(
         db,

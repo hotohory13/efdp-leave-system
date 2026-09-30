@@ -20,11 +20,13 @@ class EmploymentStatus(str, enum.Enum):
 
 
 class LeaveRequestStatus(str, enum.Enum):
-    PENDING_STAGE_1 = "PendingStage1"   # awaiting Head of Department
-    PENDING_STAGE_2 = "PendingStage2"   # awaiting Vice Dean
+    PENDING = "Pending"
+    PENDING_STAGE_1 = "Pending"
+    PENDING_STAGE_2 = "Pending"
     APPROVED = "Approved"
     REJECTED = "Rejected"
     CANCELLED = "Cancelled"
+
 
 
 class ApprovalStepStatus(str, enum.Enum):

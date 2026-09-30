@@ -47,7 +47,7 @@ body {
     width: 100%;
 }
 
-.badge-status-PendingStage1, .badge-status-PendingStage2 { background-color: #d4a017 !important; color:#1a1a1a; }
+.badge-status-Pending, .badge-status-PendingStage1, .badge-status-PendingStage2 { background-color: #d4a017 !important; color:#1a1a1a; }
 .badge-status-Approved { background-color: #1c8a4c !important; }
 .badge-status-Rejected { background-color: #b83232 !important; }
 .badge-status-Cancelled { background-color: #6c757d !important; }
